@@ -1,50 +1,73 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: 0.0.0 (template) → 1.0.0
+- Modified principles:
+  - [PRINCIPLE_1_NAME] → I. Catálogo Cerrado de Canchas
+  - [PRINCIPLE_2_NAME] → II. Prevención de Colisiones (Double-Booking) (NON-NEGOTIABLE)
+  - [PRINCIPLE_3_NAME] → III. Autenticación Obligatoria y Bloques de 24 Horas
+  - [PRINCIPLE_4_NAME] → IV. Simplicidad Arquitectónica y Estilo Funcional
+  - [PRINCIPLE_5_NAME] → V. Cero Código Sombra y Especificación como Fuente de la Verdad
+- Added sections:
+  - Naturaleza del Proyecto y Stack Tecnológico
+  - Estándares de Manejo de Errores y Validaciones
+- Removed sections: None
+- Templates requiring updates:
+  - ✅ .specify/templates/plan-template.md (compatible via Constitution Check)
+  - ✅ .specify/templates/spec-template.md (compatible)
+  - ✅ .specify/templates/tasks-template.md (compatible)
+- Follow-up TODOs: None
+-->
+
+# Constitución del Proyecto: Sistema de Reservas de Pádel
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Catálogo Cerrado de Canchas
+El sistema DEBE manejar única y exclusivamente 5 canchas fijas: **Cancha Laureles**, **Cancha El Poblado**, **Cancha Belén**, **Cancha Robledo**, y **Cancha Envigado**. No se permite la creación dinámica, edición ni eliminación de canchas fuera de este catálogo cerrado.
+*Rationale*: Garantizar la integridad del dominio acotado del club de pádel sin introducir complejidad administrativa innecesaria.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Prevención de Colisiones (Double-Booking) (NON-NEGOTIABLE)
+Bajo ninguna circunstancia se DEBE escribir una reserva en la base de datos sin validar primero que la cancha seleccionada esté libre en ese horario exacto. La validación de disponibilidad DEBE ser atómica y obligatoria antes de persistir cualquier registro de reserva.
+*Rationale*: Es la regla crítica de negocio; una doble reserva destruye la confianza operativa del sistema.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Autenticación Obligatoria y Bloques de 24 Horas
+Todo flujo de reserva EXIGE que exista un usuario con sesión activa verificada. Las reservas DEBEN operar estrictamente en formato de 24 horas para todos los bloques de tiempo manejados por el sistema.
+*Rationale*: Asegurar la trazabilidad de cada reserva hacia un usuario responsable y evitar ambigüedades horarias (AM/PM).
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Simplicidad Arquitectónica y Estilo Funcional
+El proyecto DEBE mantener una estructura plana dividida únicamente en `/frontend`, `/backend`, y `/db`, evitando sobreingeniería, "Clean Architecture" o patrones complejos. Se DEBE priorizar la programación funcional y los componentes funcionales (Hooks en React), evitando el uso de clases salvo que sea estrictamente obligatorio. La nomenclatura DEBE seguir `camelCase` para funciones/variables y `PascalCase` para Interfaces/Tipos.
+*Rationale*: Reducir la fricción cognitiva y mantener una base de código ligera, directa y fácil de mantener.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Cero Código Sombra y Especificación como Fuente de la Verdad
+El agente de IA DEBE construir estrictamente lo documentado en `spec.md`, sin añadir características "por si acaso" (sin pasarelas de pago, perfiles complejos, etc.). Si una instrucción del usuario contradice esta constitución o se detecta una falla lógica, el agente DEBE detenerse, advertir del problema y solicitar actualizar `spec.md` antes de modificar el código fuente.
+*Rationale*: Prevenir la desviación de alcance (*scope creep*) y asegurar que el código refleje fielmente la especificación acordada.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Naturaleza del Proyecto y Stack Tecnológico
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Esta es una aplicación para la reserva de canchas de pádel cuyo propósito es permitir a los usuarios autenticarse y gestionar reservas de tiempo en espacios específicos bajo las siguientes reglas inmutables de implementación:
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- **Lenguaje:** TypeScript DEBE utilizarse en todo el stack.
+- **Frontend / UI:** React utilizando Tailwind CSS para los estilos.
+- **Backend:** Node.js con Express.
+- **Base de Datos:** SQLite local (archivo `padel.db`). NO se deben usar ORMs pesados para mantener la simplicidad; se DEBE utilizar `better-sqlite3` o sentencias SQL puras.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Estándares de Manejo de Errores y Validaciones
+
+- **UI (Frontend):** NUNCA exponer errores crudos o *stack traces* al usuario final. Todo error técnico DEBE traducirse a un mensaje amigable y claro en español (ej: `"La cancha ya fue reservada en este horario"`).
+- **API (Backend):** DEBE retornar siempre códigos de estado HTTP semánticos:
+  - `400 Bad Request` para peticiones o formatos inválidos.
+  - `401 Unauthorized` para acciones sin sesión autenticada.
+  - `409 Conflict` para intentos de reserva en horarios ya ocupados (colisión).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Esta constitución tiene precedencia sobre cualquier otra práctica o convención de desarrollo en el repositorio.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+1. **Procedimiento de Enmienda:** Cualquier cambio a las reglas de negocio, stack tecnológico o principios arquitectónicos requiere actualizar primero este documento (`.specify/memory/constitution.md`) y sincronizar `spec.md` antes de alterar el código fuente.
+2. **Política de Versionado:** Se aplica versionado semántico (`MAJOR.MINOR.PATCH`):
+   - `MAJOR`: Eliminación o redefinición incompatible de principios de negocio o cambios en el stack base.
+   - `MINOR`: Adición de nuevos principios, secciones o expansión sustancial de reglas operativas.
+   - `PATCH`: Aclaraciones de redacción, correcciones tipográficas o refinamientos no semánticos.
+3. **Verificación de Cumplimiento:** Toda especificación (`spec.md`), plan de implementación (`plan.md`) y lista de tareas (`tasks.md`) DEBE validar su alineación con estos 5 principios fundamentales antes de ejecutarse.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-20 | **Last Amended**: 2026-10-20
