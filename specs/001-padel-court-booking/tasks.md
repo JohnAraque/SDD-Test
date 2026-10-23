@@ -26,9 +26,9 @@
 
 **Purpose**: Project initialization and flat directory structure creation (`/db`, `/backend`, `/frontend`)
 
-- [ ] T001 Create flat project directory structure (`db/`, `backend/src/`, `backend/tests/`, `frontend/src/components/`) per implementation plan in `specs/001-padel-court-booking/plan.md`
-- [ ] T002 Initialize backend TypeScript project with Express, `better-sqlite3`, `cors`, and `vitest` dependencies in `backend/package.json` and `backend/tsconfig.json`
-- [ ] T003 [P] Initialize frontend React + Vite + Tailwind CSS TypeScript project in `frontend/package.json`, `frontend/tsconfig.json`, `frontend/vite.config.ts`, `frontend/index.html`, `frontend/src/main.tsx`, and `frontend/src/index.css`
+- [X] T001 Create flat project directory structure (`db/`, `backend/src/`, `backend/tests/`, `frontend/src/components/`) per implementation plan in `specs/001-padel-court-booking/plan.md`
+- [X] T002 Initialize backend TypeScript project with Express, `better-sqlite3`, `cors`, and `vitest` dependencies in `backend/package.json` and `backend/tsconfig.json`
+- [X] T003 [P] Initialize frontend React + Vite + Tailwind CSS TypeScript project in `frontend/package.json`, `frontend/tsconfig.json`, `frontend/vite.config.ts`, `frontend/index.html`, `frontend/src/main.tsx`, and `frontend/src/index.css`
 
 ---
 
@@ -38,13 +38,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create SQLite DDL schema in `db/schema.sql` with table `users` (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `email TEXT NOT NULL UNIQUE COLLATE NOCASE`, `password_hash TEXT NOT NULL`, `created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))`), table `reservations` (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE`, `court_id INTEGER NOT NULL CHECK (court_id BETWEEN 1 AND 5)`, `date TEXT NOT NULL`, `start_hour INTEGER NOT NULL CHECK (start_hour BETWEEN 0 AND 23)`, `created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))`, `UNIQUE (court_id, date, start_hour)`), and index `idx_reservations_user_date ON reservations(user_id, date, start_hour)`
-- [ ] T005 Implement SQLite connection manager and automatic schema initialization using `better-sqlite3` (targeting `db/padel.db` with foreign keys and WAL mode enabled) in `db/database.ts`
-- [ ] T006 [P] Define backend TypeScript interfaces in `PascalCase` (`Court` with union `'Cancha Laureles' | 'Cancha El Poblado' | 'Cancha Belén' | 'Cancha Robledo' | 'Cancha Envigado'`, `User`, `Reservation`, `TimeSlotAvailability`) in `backend/src/types.ts`
-- [ ] T007 [P] Define frontend TypeScript interfaces in `PascalCase` (`Court`, `User`, `Reservation`, `TimeSlotAvailability`, `MyReservationsResponse`) in `frontend/src/types.ts`
-- [ ] T008 Implement password hashing (`scrypt`), token signing/verification, and `requireAuth` Express middleware (returning `401 Unauthorized` with Spanish error message when session is missing or invalid) in `backend/src/auth.ts`
-- [ ] T009 Setup base Express application with JSON parsing, CORS, Spanish error handling middleware (never exposing stack traces), and server entrypoint in `backend/src/app.ts` and `backend/src/server.ts`
-- [ ] T010 [P] Implement functional HTTP client with `Authorization: Bearer <token>` header injection and Spanish error message extraction in `frontend/src/api.ts`
+- [X] T004 Create SQLite DDL schema in `db/schema.sql` with table `users` (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `email TEXT NOT NULL UNIQUE COLLATE NOCASE`, `password_hash TEXT NOT NULL`, `created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))`), table `reservations` (`id INTEGER PRIMARY KEY AUTOINCREMENT`, `user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE`, `court_id INTEGER NOT NULL CHECK (court_id BETWEEN 1 AND 5)`, `date TEXT NOT NULL`, `start_hour INTEGER NOT NULL CHECK (start_hour BETWEEN 0 AND 23)`, `created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))`, `UNIQUE (court_id, date, start_hour)`), and index `idx_reservations_user_date ON reservations(user_id, date, start_hour)`
+- [X] T005 Implement SQLite connection manager and automatic schema initialization using `better-sqlite3` (targeting `db/padel.db` with foreign keys and WAL mode enabled) in `db/database.ts`
+- [X] T006 [P] Define backend TypeScript interfaces in `PascalCase` (`Court` with union `'Cancha Laureles' | 'Cancha El Poblado' | 'Cancha Belén' | 'Cancha Robledo' | 'Cancha Envigado'`, `User`, `Reservation`, `TimeSlotAvailability`) in `backend/src/types.ts`
+- [X] T007 [P] Define frontend TypeScript interfaces in `PascalCase` (`Court`, `User`, `Reservation`, `TimeSlotAvailability`, `MyReservationsResponse`) in `frontend/src/types.ts`
+- [X] T008 Implement password hashing (`scrypt`), token signing/verification, and `requireAuth` Express middleware (returning `401 Unauthorized` with Spanish error message when session is missing or invalid) in `backend/src/auth.ts`
+- [X] T009 Setup base Express application with JSON parsing, CORS, Spanish error handling middleware (never exposing stack traces), and server entrypoint in `backend/src/app.ts` and `backend/src/server.ts`
+- [X] T010 [P] Implement functional HTTP client with `Authorization: Bearer <token>` header injection and Spanish error message extraction in `frontend/src/api.ts`
 
 **Checkpoint**: Foundation ready — database, types, auth guard, and HTTP layer are in place; user story implementation can now begin.
 
@@ -58,11 +58,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] [US1] Implement immutable 5-court catalog (`1: Cancha Laureles`, `2: Cancha El Poblado`, `3: Cancha Belén`, `4: Cancha Robledo`, `5: Cancha Envigado`) and 24-hour availability calculator (`0..23` blocks formatted `"00:00 - 01:00"` to `"23:00 - 00:00"`, computing `status: 'Disponible' | 'Reservado'` and `isPast: boolean` relative to local date/hour) in `backend/src/courts.ts`
-- [ ] T012 [US1] Implement atomic reservation creation in `backend/src/reservations.ts` using `db.transaction(...).immediate()` to validate future date/hour (`date > today` or `date == today && start_hour > currentHour`, else `400`), enforce maximum 1 active future reservation per user (`409 Conflict`), and prevent double-booking on `(court_id, date, start_hour)` (`409 Conflict` with `"La cancha ya fue reservada en este horario"`)
-- [ ] T013 [US1] Register protected endpoints `GET /api/courts`, `GET /api/courts/:courtId/availability`, and `POST /api/reservations` with `requireAuth` middleware in `backend/src/app.ts`
-- [ ] T014 [P] [US1] Create functional `CourtSelector` component in `frontend/src/components/CourtSelector.tsx` allowing selection among the 5 fixed courts and any calendar date `YYYY-MM-DD` (including past dates in read-only mode)
-- [ ] T015 [P] [US1] Create functional `AvailabilityGrid` component in `frontend/src/components/AvailabilityGrid.tsx` rendering the 24 hourly blocks in 24h format, disabling blocks where `isPast` is true, clearly distinguishing `"Disponible"` and `"Reservado"`, and providing a reservation confirmation action with Spanish feedback messages
+- [X] T011 [P] [US1] Implement immutable 5-court catalog (`1: Cancha Laureles`, `2: Cancha El Poblado`, `3: Cancha Belén`, `4: Cancha Robledo`, `5: Cancha Envigado`) and 24-hour availability calculator (`0..23` blocks formatted `"00:00 - 01:00"` to `"23:00 - 00:00"`, computing `status: 'Disponible' | 'Reservado'` and `isPast: boolean` relative to local date/hour) in `backend/src/courts.ts`
+- [X] T012 [US1] Implement atomic reservation creation in `backend/src/reservations.ts` using `db.transaction(...).immediate()` to validate future date/hour (`date > today` or `date == today && start_hour > currentHour`, else `400`), enforce maximum 1 active future reservation per user (`409 Conflict`), and prevent double-booking on `(court_id, date, start_hour)` (`409 Conflict` with `"La cancha ya fue reservada en este horario"`)
+- [X] T013 [US1] Register protected endpoints `GET /api/courts`, `GET /api/courts/:courtId/availability`, and `POST /api/reservations` with `requireAuth` middleware in `backend/src/app.ts`
+- [X] T014 [P] [US1] Create functional `CourtSelector` component in `frontend/src/components/CourtSelector.tsx` allowing selection among the 5 fixed courts and any calendar date `YYYY-MM-DD` (including past dates in read-only mode)
+- [X] T015 [P] [US1] Create functional `AvailabilityGrid` component in `frontend/src/components/AvailabilityGrid.tsx` rendering the 24 hourly blocks in 24h format, disabling blocks where `isPast` is true, clearly distinguishing `"Disponible"` and `"Reservado"`, and providing a reservation confirmation action with Spanish feedback messages
 
 **Checkpoint**: At this point, User Story 1 is complete and independently testable via API and UI components.
 
@@ -76,9 +76,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement `POST /api/auth/register` (validating valid email format normalized with `trim().toLowerCase()`, password minimum 6 characters, returning `409 Conflict` `"El correo electrónico ya está registrado"` on duplicate email), `POST /api/auth/login` (`401 Unauthorized` on invalid credentials), and `GET /api/auth/me` in `backend/src/auth.ts` and mount routes in `backend/src/app.ts`
-- [ ] T017 [P] [US2] Create functional `AuthForm` component in `frontend/src/components/AuthForm.tsx` supporting toggle between Login and Registration, client validation, and friendly Spanish error display
-- [ ] T018 [US2] Integrate session state (`token`, `user`, login, register, logout) and unauthenticated access gate in `frontend/src/App.tsx` so only authenticated users can view availability and create reservations
+- [X] T016 [US2] Implement `POST /api/auth/register` (validating valid email format normalized with `trim().toLowerCase()`, password minimum 6 characters, returning `409 Conflict` `"El correo electrónico ya está registrado"` on duplicate email), `POST /api/auth/login` (`401 Unauthorized` on invalid credentials), and `GET /api/auth/me` in `backend/src/auth.ts` and mount routes in `backend/src/app.ts`
+- [X] T017 [P] [US2] Create functional `AuthForm` component in `frontend/src/components/AuthForm.tsx` supporting toggle between Login and Registration, client validation, and friendly Spanish error display
+- [X] T018 [US2] Integrate session state (`token`, `user`, login, register, logout) and unauthenticated access gate in `frontend/src/App.tsx` so only authenticated users can view availability and create reservations
 
 **Checkpoint**: At this point, User Stories 1 AND 2 work together end-to-end with full authentication and session protection.
 
@@ -92,10 +92,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Implement `getUserReservations` (splitting user's own rows into `upcoming` where `date > today` or `(date == today && start_hour > currentHour)` and `past` where `date < today` or `(date == today && start_hour <= currentHour)`) and `cancelReservation` (enforcing ownership `user_id = currentUser.id`, verifying future start time before `start_hour:00`, and executing physical `DELETE FROM reservations WHERE id = ? AND user_id = ?`) in `backend/src/reservations.ts`
-- [ ] T020 [US3] Register protected endpoints `GET /api/reservations/my` and `DELETE /api/reservations/:id` with `requireAuth` middleware in `backend/src/app.ts`
-- [ ] T021 [P] [US3] Create functional `MyReservations` component in `frontend/src/components/MyReservations.tsx` displaying upcoming active reservations (with confirmation step to cancel) and past reservation history, showing Court Name, Date (`YYYY-MM-DD`), and Time (`HH:00 - HH:00`) for every item
-- [ ] T022 [US3] Add navigation between `"Explorar Canchas"` and `"Mis Reservas"` and synchronize reservation creation/cancellation state updates in `frontend/src/App.tsx`
+- [X] T019 [US3] Implement `getUserReservations` (splitting user's own rows into `upcoming` where `date > today` or `(date == today && start_hour > currentHour)` and `past` where `date < today` or `(date == today && start_hour <= currentHour)`) and `cancelReservation` (enforcing ownership `user_id = currentUser.id`, verifying future start time before `start_hour:00`, and executing physical `DELETE FROM reservations WHERE id = ? AND user_id = ?`) in `backend/src/reservations.ts`
+- [X] T020 [US3] Register protected endpoints `GET /api/reservations/my` and `DELETE /api/reservations/:id` with `requireAuth` middleware in `backend/src/app.ts`
+- [X] T021 [P] [US3] Create functional `MyReservations` component in `frontend/src/components/MyReservations.tsx` displaying upcoming active reservations (with confirmation step to cancel) and past reservation history, showing Court Name, Date (`YYYY-MM-DD`), and Time (`HH:00 - HH:00`) for every item
+- [X] T022 [US3] Add navigation between `"Explorar Canchas"` and `"Mis Reservas"` and synchronize reservation creation/cancellation state updates in `frontend/src/App.tsx`
 
 **Checkpoint**: All three user stories (`US1`, `US2`, `US3`) are now independently functional and integrated in the UI.
 
@@ -105,8 +105,8 @@
 
 **Purpose**: Automated verification of business rules, collision prevention, and constitutional compliance across all stories
 
-- [ ] T023 [P] Create automated integration test suite in `backend/tests/api.test.ts` verifying: registration/login (`201`/`200`/`401`/`409`), 5-court catalog immutability, double-booking collision rejection (`409`), single active future reservation limit (`409`), past slot booking rejection (`400`), third-party cancellation rejection (`404`/`401`), and immediate slot release upon cancellation (`200`)
-- [ ] T024 Validate full codebase against Constitution principles (`camelCase` variables/functions, `PascalCase` interfaces/types, zero classes, Spanish UI error messages, HTTP `400`/`401`/`409` status codes) and run end-to-end verification per `specs/001-padel-court-booking/quickstart.md`
+- [X] T023 [P] Create automated integration test suite in `backend/tests/api.test.ts` verifying: registration/login (`201`/`200`/`401`/`409`), 5-court catalog immutability, double-booking collision rejection (`409`), single active future reservation limit (`409`), past slot booking rejection (`400`), third-party cancellation rejection (`404`/`401`), and immediate slot release upon cancellation (`200`)
+- [X] T024 Validate full codebase against Constitution principles (`camelCase` variables/functions, `PascalCase` interfaces/types, zero classes, Spanish UI error messages, HTTP `400`/`401`/`409` status codes) and run end-to-end verification per `specs/001-padel-court-booking/quickstart.md`
 
 ---
 
