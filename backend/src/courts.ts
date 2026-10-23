@@ -9,6 +9,17 @@ export const courtsCatalog: readonly Court[] = Object.freeze([
   { id: 5, name: 'Cancha Envigado' }
 ]);
 
+export const operatingStartHourMin = 7;
+export const operatingStartHourMax = 21;
+
+export const isOperatingHour = (startHour: number): boolean => {
+  return (
+    Number.isInteger(startHour) &&
+    startHour >= operatingStartHourMin &&
+    startHour <= operatingStartHourMax
+  );
+};
+
 export const getCourts = (): readonly Court[] => courtsCatalog;
 
 export const getCourtById = (courtId: number): Court | undefined => {
@@ -86,12 +97,20 @@ export const getCourtAvailability = (
 
   const reservedHours = new Set(rows.map((r) => r.start_hour));
 
-  const slots: TimeSlotAvailability[] = Array.from({ length: 24 }, (_, hour) => ({
-    startHour: hour,
-    label: formatTimeSlotLabel(hour),
-    status: reservedHours.has(hour) ? 'Reservado' : 'Disponible',
-    isPast: isSlotInPast(dateStr, hour, now)
-  }));
+  const slots: TimeSlotAvailability[] = Array.from({ length: 24 }, (_, hour) => {
+    const operating = isOperatingHour(hour);
+    return {
+      startHour: hour,
+      label: formatTimeSlotLabel(hour),
+      status: !operating
+        ? 'No habilitado'
+        : reservedHours.has(hour)
+        ? 'Reservado'
+        : 'Disponible',
+      isPast: isSlotInPast(dateStr, hour, now),
+      isOperatingHour: operating
+    };
+  });
 
   return {
     status: 200,

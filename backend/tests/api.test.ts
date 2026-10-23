@@ -71,7 +71,7 @@ describe('Sistema de Reservas de Canchas de Pádel — API & Reglas de Negocio',
     expect(loginRes.body.token).toBeTypeOf('string');
   });
 
-  it('US1: lista estáticamente las 5 canchas y devuelve la grilla de 24 bloques en formato 24h', async () => {
+  it('US1: lista las 5 canchas y devuelve la grilla de 24h con horario habilitado 07:00-22:00 (7..21) y deshabilitado 22:00-06:00 (0..6 y 22..23)', async () => {
     const reg = await request(app)
       .post('/api/auth/register')
       .send({ email: 'explorador@padel.com', password: 'password123' });
@@ -94,11 +94,38 @@ describe('Sistema de Reservas de Canchas de Pádel — API & Reglas de Negocio',
       .set('Authorization', `Bearer ${token}`);
     expect(availRes.status).toBe(200);
     expect(availRes.body.slots).toHaveLength(24);
-    expect(availRes.body.slots[0].label).toBe('00:00 - 01:00');
-    expect(availRes.body.slots[14].label).toBe('14:00 - 15:00');
-    expect(availRes.body.slots[23].label).toBe('23:00 - 00:00');
-    expect(availRes.body.slots[14].status).toBe('Disponible');
-    expect(availRes.body.slots[14].isPast).toBe(false);
+
+    // Bloques 0..6 (00:00 a 06:00) y 22..23 (22:00 a 23:00) están deshabilitados
+    for (const hour of [0, 1, 2, 3, 4, 5, 6, 22, 23]) {
+      expect(availRes.body.slots[hour].isOperatingHour).toBe(false);
+      expect(availRes.body.slots[hour].status).toBe('No habilitado');
+    }
+
+    // Bloques 7..21 (07:00 - 08:00 hasta 21:00 - 22:00) están habilitados
+    for (let hour = 7; hour <= 21; hour++) {
+      expect(availRes.body.slots[hour].isOperatingHour).toBe(true);
+      expect(availRes.body.slots[hour].status).toBe('Disponible');
+      expect(availRes.body.slots[hour].isPast).toBe(false);
+    }
+
+    expect(availRes.body.slots[7].label).toBe('07:00 - 08:00');
+    expect(availRes.body.slots[21].label).toBe('21:00 - 22:00');
+    expect(availRes.body.slots[22].label).toBe('22:00 - 23:00');
+
+    // Rechaza intentos de reservar en horas deshabilitadas (ej. 06:00 o 22:00) -> 400 Bad Request
+    const bookAt6Am = await request(app)
+      .post('/api/reservations')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ courtId: 1, date: '2099-11-15', startHour: 6 });
+    expect(bookAt6Am.status).toBe(400);
+    expect(bookAt6Am.body.error).toContain('07:00 a 22:00');
+
+    const bookAt10Pm = await request(app)
+      .post('/api/reservations')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ courtId: 1, date: '2099-11-15', startHour: 22 });
+    expect(bookAt10Pm.status).toBe(400);
+    expect(bookAt10Pm.body.error).toContain('07:00 a 22:00');
 
     const pastAvailRes = await request(app)
       .get('/api/courts/1/availability?date=2020-01-01')

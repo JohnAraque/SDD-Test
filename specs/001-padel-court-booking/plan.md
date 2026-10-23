@@ -29,10 +29,10 @@ Construir una aplicación web completa para la reserva de canchas de pádel que 
 **Constraints**:
 - Catálogo inmutable de 5 canchas (`Cancha Laureles`, `Cancha El Poblado`, `Cancha Belén`, `Cancha Robledo`, `Cancha Envigado`).
 - Validación atómica obligatoria contra *double-booking* antes de persistir reservas.
-- Formato estricto de 24 horas (`00:00` a `23:00`) en bloques enteros de 1 hora.
+- Formato estricto de 24 horas (`00:00` a `23:00`) en bloques enteros de 1 hora, con horario habilitado para reservas de `07:00` a `22:00` (`07:00 - 08:00` hasta `21:00 - 22:00`) y bloques deshabilitados de `22:00` a `06:00` (`00:00 - 07:00` y `22:00 - 00:00`).
 - Mensajes de error amigables en español en la UI y códigos HTTP semánticos (`400`, `401`, `409`) en el backend.
 
-**Scale/Scope**: Club de pádel de 5 canchas (120 bloques horarios totales por día), diseñado para cientos de usuarios registrados y reservas concurrentes sin degradación ni colisiones.
+**Scale/Scope**: Club de pádel de 5 canchas (120 bloques horarios totales por día, 75 bloques operativos reservables por día entre `07:00` y `22:00`), diseñado para cientos de usuarios registrados y reservas concurrentes sin degradación ni colisiones.
 
 ## Constitution Check
 
@@ -42,7 +42,7 @@ Construir una aplicación web completa para la reserva de canchas de pádel que 
 | --- | --- | --- | --- |
 | **I. Catálogo Cerrado de Canchas** | ✅ PASS | ✅ PASS | Exactamente las 5 canchas requeridas están fijas en `data-model.md` y `/api/courts`, sin endpoints de creación/edición/borrado de canchas. |
 | **II. Prevención de Colisiones (NON-NEGOTIABLE)** | ✅ PASS | ✅ PASS | Transacción atómica `db.transaction` (`IMMEDIATE`) + `UNIQUE(court_id, date, start_hour)` en SQLite documentados en `research.md` y `data-model.md`, retornando `409 Conflict`. |
-| **III. Autenticación Obligatoria y Bloques de 24 Horas** | ✅ PASS | ✅ PASS | Todos los endpoints de disponibilidad y reservas exigen sesión activa (`401 Unauthorized` si falta) y manejan `start_hour` de `0` a `23` (`00:00 - 01:00` a `23:00 - 00:00`). |
+| **III. Autenticación Obligatoria y Bloques de 24 Horas** | ✅ PASS | ✅ PASS | Todos los endpoints de disponibilidad y reservas exigen sesión activa (`401 Unauthorized` si falta) y operan en formato de 24 horas (`00:00 - 01:00` a `23:00 - 00:00`), habilitando `07:00 - 22:00` y deshabilitando `22:00 - 06:00` (`00:00 - 07:00` y `22:00 - 00:00`). |
 | **IV. Simplicidad Arquitectónica y Estilo Funcional** | ✅ PASS | ✅ PASS | Estructura plana dividida únicamente en `/db`, `/backend` y `/frontend`; uso de funciones puras, Hooks en React, `camelCase` para variables/funciones y `PascalCase` para interfaces/tipos. |
 | **V. Cero Código Sombra y Especificación como Fuente de la Verdad** | ✅ PASS | ✅ PASS | Ninguna característica fuera de `spec.md` fue añadida (sin pagos, sin admin web, sin notificaciones externas, sin matchmaking). |
 | **Stack Tecnológico y Estándares de Errores** | ✅ PASS | ✅ PASS | TypeScript en todo el stack, React + Tailwind CSS, Node.js + Express, SQLite (`padel.db` con `better-sqlite3`), errores en español y códigos HTTP `400`, `401`, `409`. |

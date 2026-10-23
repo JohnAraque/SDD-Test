@@ -3,6 +3,7 @@ import {
   formatTimeSlotLabel,
   getCourtById,
   getCurrentLocalDateAndHour,
+  isOperatingHour,
   isSlotInPast,
   isValidDateString
 } from './courts';
@@ -55,6 +56,16 @@ export const createReservation = (
     return {
       status: 400,
       body: { error: 'Los datos de la reserva son inválidos' }
+    };
+  }
+
+  if (!isOperatingHour(startHour)) {
+    return {
+      status: 400,
+      body: {
+        error:
+          'El horario seleccionado está fuera del horario habilitado (07:00 a 22:00)'
+      }
     };
   }
 

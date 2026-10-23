@@ -96,7 +96,7 @@ Retorna el catálogo cerrado e inmutable de las 5 canchas (`FR-004`).
     ```
 
 ### `GET /api/courts/:courtId/availability?date=YYYY-MM-DD`
-Retorna la grilla de 24 bloques de 1 hora (`00:00` a `23:00`) para la cancha y fecha seleccionadas (`FR-005`, `FR-006`, `FR-007`).
+Retorna la grilla de 24 bloques de 1 hora (`00:00` a `23:00`) para la cancha y fecha seleccionadas (`FR-005`, `FR-006`, `FR-007`), donde los bloques de `07:00 - 08:00` a `21:00 - 22:00` (`startHour` `7..21`) son horarios operativos (`isOperatingHour: true`, con estado `"Disponible"` o `"Reservado"`) y los bloques de `22:00` a `06:00` (`startHour` `0..6` y `22..23`) están deshabilitados (`isOperatingHour: false`, `status: "No habilitado"`).
 
 - **Query Params**: `date` en formato `YYYY-MM-DD`.
 - **Responses**:
@@ -104,25 +104,35 @@ Retorna la grilla de 24 bloques de 1 hora (`00:00` a `23:00`) para la cancha y f
     ```json
     {
       "court": { "id": 1, "name": "Cancha Laureles" },
-      "date": "2026-10-23",
+      "date": "2026-10-24",
       "slots": [
         {
           "startHour": 0,
           "label": "00:00 - 01:00",
+          "status": "No habilitado",
+          "isPast": false,
+          "isOperatingHour": false
+        },
+        {
+          "startHour": 7,
+          "label": "07:00 - 08:00",
           "status": "Disponible",
-          "isPast": true
+          "isPast": false,
+          "isOperatingHour": true
         },
         {
           "startHour": 14,
           "label": "14:00 - 15:00",
           "status": "Reservado",
-          "isPast": false
+          "isPast": false,
+          "isOperatingHour": true
         },
         {
-          "startHour": 15,
-          "label": "15:00 - 16:00",
-          "status": "Disponible",
-          "isPast": false
+          "startHour": 22,
+          "label": "22:00 - 23:00",
+          "status": "No habilitado",
+          "isPast": false,
+          "isOperatingHour": false
         }
       ]
     }
@@ -137,7 +147,7 @@ Retorna la grilla de 24 bloques de 1 hora (`00:00` a `23:00`) para la cancha y f
 > **Requiere autenticación (`Authorization: Bearer <token>`)** — Retorna `401 Unauthorized` si no hay sesión activa (`FR-003`).
 
 ### `POST /api/reservations`
-Crea una nueva reserva de 1 hora tras validar atómicamente disponibilidad, horario futuro y límite de 1 reserva activa por usuario (`FR-008`, `FR-009`, `FR-010`, `FR-011`).
+Crea una nueva reserva de 1 hora tras validar atómicamente disponibilidad, horario operativo (`startHour` entre `7` y `21`, es decir `07:00 - 22:00`), horario futuro y límite de 1 reserva activa por usuario (`FR-008`, `FR-009`, `FR-010`, `FR-011`).
 
 - **Request Body**:
   ```json
@@ -164,6 +174,7 @@ Crea una nueva reserva de 1 hora tras validar atómicamente disponibilidad, hora
     }
     ```
   - `400 Bad Request`:
+    - `{ "error": "El horario seleccionado está fuera del horario habilitado (07:00 a 22:00)" }`
     - `{ "error": "No se pueden realizar reservas en fechas u horarios que ya han transcurrido" }`
     - `{ "error": "Los datos de la reserva son inválidos" }`
   - `401 Unauthorized`: `{ "error": "Debes iniciar sesión para realizar una reserva" }`

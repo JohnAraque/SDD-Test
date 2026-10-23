@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS reservations (
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   court_id INTEGER NOT NULL CHECK (court_id BETWEEN 1 AND 5),
   date TEXT NOT NULL,
-  start_hour INTEGER NOT NULL CHECK (start_hour BETWEEN 0 AND 23),
+  start_hour INTEGER NOT NULL CHECK (start_hour BETWEEN 7 AND 21),
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   UNIQUE (court_id, date, start_hour)
 );

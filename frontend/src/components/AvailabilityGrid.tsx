@@ -41,14 +41,16 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             2. Grilla de Horarios (24 Horas) — {court ? court.name : 'Cancha'}
           </h2>
           <p className="text-sm text-slate-600">
-            Fecha seleccionada: <span className="font-medium text-slate-900">{date}</span>
+            Fecha seleccionada:{' '}
+            <span className="font-medium text-slate-900">{date}</span> · Horario habilitado:{' '}
+            <span className="font-medium text-emerald-700">07:00 a 22:00</span>
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            Disponible
+            Disponible (07:00 - 22:00)
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
             <span className="w-2 h-2 rounded-full bg-rose-500" />
@@ -56,7 +58,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
             <span className="w-2 h-2 rounded-full bg-slate-400" />
-            Horario transcurrido (Solo lectura)
+            Deshabilitado (22:00 - 06:00 o Pasado)
           </span>
         </div>
       </div>
@@ -111,7 +113,9 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {slots.map((slot) => {
             const isReserved = slot.status === 'Reservado';
-            const isDisabled = slot.isPast || isReserved || isSubmitting;
+            const isNonOperating = !slot.isOperatingHour;
+            const isDisabled =
+              isNonOperating || slot.isPast || isReserved || isSubmitting;
             const isCurrentlySelected =
               selectedSlot?.startHour === slot.startHour;
 
@@ -120,6 +124,9 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             if (isCurrentlySelected) {
               cardClasses =
                 'bg-emerald-600 border-emerald-600 text-white ring-2 ring-emerald-400 cursor-pointer';
+            } else if (isNonOperating) {
+              cardClasses =
+                'bg-slate-100/80 border-slate-200 text-slate-400 opacity-75 cursor-not-allowed';
             } else if (isReserved) {
               cardClasses =
                 'bg-rose-50/70 border-rose-200 text-rose-900 opacity-85 cursor-not-allowed';
@@ -144,6 +151,8 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                     className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-md ${
                       isCurrentlySelected
                         ? 'bg-emerald-700 text-white'
+                        : isNonOperating
+                        ? 'bg-slate-200 text-slate-500'
                         : isReserved
                         ? 'bg-rose-100 text-rose-800'
                         : slot.isPast
@@ -153,7 +162,7 @@ export const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   >
                     {slot.status}
                   </span>
-                  {slot.isPast && (
+                  {slot.isPast && slot.isOperatingHour && (
                     <span className="text-[11px] font-medium text-slate-500">
                       Pasado
                     </span>

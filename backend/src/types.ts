@@ -32,8 +32,9 @@ export interface Reservation {
 export interface TimeSlotAvailability {
   startHour: number;
   label: string;
-  status: 'Disponible' | 'Reservado';
+  status: 'Disponible' | 'Reservado' | 'No habilitado';
   isPast: boolean;
+  isOperatingHour: boolean;
 }
 
 export interface AuthenticatedRequest extends Request {

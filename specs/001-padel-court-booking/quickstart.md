@@ -49,9 +49,10 @@ npm test
 1. **Control de Acceso y Autenticación (`US2`)**:
    - Abrir `http://localhost:5173` sin sesión activa → Verificar que se solicita iniciar sesión o registrarse antes de mostrar la disponibilidad.
    - Registrar el Usuario A (`usuario1@padel.com`) → Verificar que ingresa automáticamente al panel principal y visualiza las 5 canchas (`Cancha Laureles`, `Cancha El Poblado`, `Cancha Belén`, `Cancha Robledo`, `Cancha Envigado`).
-2. **Exploración de Grilla 24h y Modo Solo Lectura en Pasado (`US1`, `FR-005`..`FR-007`)**:
-   - Seleccionar `Cancha Laureles` y una fecha pasada en el calendario → Verificar que se muestran los 24 bloques (`00:00 - 01:00` a `23:00 - 00:00`) todos deshabilitados en modo solo lectura.
-   - Seleccionar la fecha actual → Verificar que las horas ya transcurridas aparecen deshabilitadas y las horas futuras aparecen como `"Disponible"` o `"Reservado"`.
+2. **Exploración de Grilla 24h, Horario Operativo (`07:00 - 22:00`) y Modo Solo Lectura en Pasado (`US1`, `FR-005`..`FR-007`)**:
+   - Seleccionar `Cancha Laureles` y una fecha futura → Verificar que se muestran los 24 bloques (`00:00 - 01:00` a `23:00 - 00:00`), donde los bloques de `00:00 - 07:00` (`00:00` a `06:00`) y `22:00 - 00:00` (`22:00` y `23:00`) aparecen **deshabilitados** (`No habilitado`), y únicamente los bloques de `07:00 - 08:00` a `21:00 - 22:00` están habilitados (`Disponible` / `Reservado`).
+   - Seleccionar una fecha pasada en el calendario → Verificar que todos los bloques se muestran deshabilitados en modo solo lectura.
+   - Seleccionar la fecha actual → Verificar que las horas ya transcurridas aparecen deshabilitadas y las horas futuras dentro de `07:00 - 22:00` aparecen como `"Disponible"` o `"Reservado"`.
 3. **Reserva Exitosa y Límite de 1 Reserva Activa (`US1`, `FR-008`, `FR-010`)**:
    - Seleccionar un bloque futuro `"Disponible"` (ej. mañana a las `14:00 - 15:00`) y confirmar → El bloque pasa a `"Reservado"`.
    - Intentar reservar un segundo bloque futuro con el mismo Usuario A → El sistema rechaza la operación (`409 Conflict`) mostrando `"Ya tienes una reserva activa. Solo puedes tener una reserva futura a la vez"`.

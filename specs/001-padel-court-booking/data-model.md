@@ -69,7 +69,7 @@ Representa la reserva confirmada de una cancha por un usuario para una fecha y b
 | `user_id` | `INTEGER` | `NOT NULL REFERENCES users(id) ON DELETE CASCADE` | Usuario propietario de la reserva |
 | `court_id` | `INTEGER` | `NOT NULL CHECK (court_id BETWEEN 1 AND 5)` | Identificador de la cancha (1 a 5) |
 | `date` | `TEXT` | `NOT NULL` | Fecha en formato `YYYY-MM-DD` |
-| `start_hour` | `INTEGER` | `NOT NULL CHECK (start_hour BETWEEN 0 AND 23)` | Hora de inicio del bloque en formato 24h (`0` = `00:00`, `14` = `14:00`, `23` = `23:00`) |
+| `start_hour` | `INTEGER` | `NOT NULL CHECK (start_hour BETWEEN 7 AND 21)` | Hora de inicio del bloque operativo en formato 24h (`7` = `07:00 - 08:00`, ..., `21` = `21:00 - 22:00`; los bloques `0..6` y `22..23` están deshabilitados) |
 | `created_at` | `TEXT` | `NOT NULL DEFAULT (datetime('now', 'localtime'))` | Marca de tiempo de creación |
 
 ### Índices y Restricciones Críticas (SQLite DDL)
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS reservations (
   user_id INTEGER NOT NULL,
   court_id INTEGER NOT NULL CHECK (court_id BETWEEN 1 AND 5),
   date TEXT NOT NULL,
-  start_hour INTEGER NOT NULL CHECK (start_hour BETWEEN 0 AND 23),
+  start_hour INTEGER NOT NULL CHECK (start_hour BETWEEN 7 AND 21),
   created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   UNIQUE (court_id, date, start_hour)
@@ -106,16 +106,17 @@ export interface Reservation {
   courtId: number;
   courtName: string;
   date: string;       // "YYYY-MM-DD"
-  startHour: number;  // 0..23
+  startHour: number;  // 7..21 (horario operativo 07:00 - 22:00)
   timeSlot: string;   // Ej. "14:00 - 15:00"
   createdAt: string;
 }
 
 export interface TimeSlotAvailability {
-  startHour: number;  // 0..23
-  label: string;      // "00:00 - 01:00" .. "23:00 - 00:00"
-  status: 'Disponible' | 'Reservado';
-  isPast: boolean;    // true si la fecha/hora de inicio ya transcurrió
+  startHour: number;        // 0..23
+  label: string;            // "00:00 - 01:00" .. "23:00 - 00:00"
+  status: 'Disponible' | 'Reservado' | 'No habilitado';
+  isPast: boolean;          // true si la fecha/hora de inicio ya transcurrió
+  isOperatingHour: boolean; // true para 7..21 (07:00 - 22:00), false para 0..6 y 22..23
 }
 ```
 

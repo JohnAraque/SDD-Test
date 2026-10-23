@@ -21,11 +21,11 @@
   - *Sesiones en memoria sin persistencia o texto plano*: Rechazado por inseguridad en contraseñas y pérdida de sesión en reinicios.
   - *OAuth2 / Proveedores externos*: Fuera de alcance según `spec.md` (`FR-001` especifica registro e inicio de sesión con correo electrónico y contraseña).
 
-## 3. Manejo de Fechas, Formato 24 Horas y Transición de Reserva Activa a Pasada
+## 3. Manejo de Fechas, Formato 24 Horas, Horario Operativo (07:00 a 22:00) y Transición de Reserva Activa a Pasada
 
-- **Decision**: Representar las fechas como cadenas ISO locales `YYYY-MM-DD` (ej. `"2026-10-23"`) y los bloques horarios como enteros de `0` a `23` (o formato `"HH:00"` de `"00:00"` a `"23:00"`), evaluando la transición de reserva activa a pasada contra la fecha y hora local actual del club (`new Date()`).
+- **Decision**: Representar las fechas como cadenas ISO locales `YYYY-MM-DD` (ej. `"2026-10-23"`) y los bloques horarios de la grilla de 24 horas como enteros de `0` a `23` (`"00:00 - 01:00"` a `"23:00 - 00:00"`), restringiendo los bloques habilitados para reserva al rango operativo `start_hour` entre `7` y `21` inclusive (`07:00 - 08:00` a `21:00 - 22:00`, es decir, 7:00 AM a 10:00 PM) y dejando deshabilitados los bloques nocturnos/madrugada (`22:00` a `06:00`, es decir `start_hour < 7` o `start_hour > 21`).
 - **Rationale**:
-  - Como los bloques son estrictamente de 1 hora exacta en formato 24h (`00:00` a `23:00`), almacenar `date` (`YYYY-MM-DD`) y `start_hour` (`0`..`23`) elimina ambigüedades de milisegundos o zonas horarias cruzadas y facilita la indexación `UNIQUE(court_id, date, start_hour)`.
+  - La grilla sigue mostrando las 24 horas del día en formato 24h (`FR-006`), cumpliendo con el Principio III de la Constitución, pero marca con `isOperatingHour: false` (deshabilitados en la UI) los bloques `00:00 - 07:00` (`0..6`) y `22:00 - 00:00` (`22..23`), y rechaza en el backend (`400 Bad Request`) y a nivel de base de datos (`CHECK (start_hour BETWEEN 7 AND 21)`) cualquier intento de reserva fuera de `07:00 - 22:00`.
   - Una reserva se considera **futura/activa** si y solo si: `(date > currentDate) OR (date == currentDate AND start_hour > currentHour)`.
   - Exactamente cuando el reloj alcanza `start_hour:00` del día `date` (es decir, `currentHour >= start_hour` en `date == currentDate`), el bloque ya inició/transcurrió, por lo que:
     1. No puede ser reservado (`400 Bad Request`).
